@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Linq;
 
 namespace func_rocket
@@ -6,12 +7,12 @@ namespace func_rocket
 	public class ForcesTask
 	{
 		/// <summary>
-		/// Создает делегат, возвращающий по ракете вектор силы тяги двигателей этой ракеты.
+		/// Создает делегат, возвращающий ракете вектор силы тяги двигателей этой ракеты.
 		/// Сила тяги направлена вдоль ракеты и равна по модулю forceValue.
 		/// </summary>
 		public static RocketForce GetThrustForce(double forceValue)
 		{
-			return r => Vector.Zero;
+			return r => new Vector(forceValue, 0).Rotate(r.Direction);
 		}
 
 		/// <summary>
@@ -19,7 +20,7 @@ namespace func_rocket
 		/// </summary>
 		public static RocketForce ConvertGravityToForce(Gravity gravity, Size spaceSize)
 		{
-			return r => Vector.Zero;
+			return r => gravity(spaceSize, r.Location);
 		}
 
 		/// <summary>
@@ -27,7 +28,15 @@ namespace func_rocket
 		/// </summary>
 		public static RocketForce Sum(params RocketForce[] forces)
 		{
-			return forces[0];
+			return r =>
+			{
+				Vector result = Vector.Zero;
+
+				foreach (var e in forces)
+					result += e(r);
+
+				return result;
+			};
 		}
 	}
 }
